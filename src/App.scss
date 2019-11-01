@@ -1,0 +1,55 @@
+.App {
+	text-align: center;
+}
+
+.App-logo {
+	height: 40vmin;
+}
+
+.App-header {
+	background-color: #282c34;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	font-size: calc(10px + 2vmin);
+	color: white;
+}
+
+.App-link {
+	color: #09d3ac;
+}
+
+#popup-container{
+	overflow: hidden;
+	width: 300px;
+	height: 100vh;
+	.tab{
+		width: 300px;
+		position: absolute;
+		transition: right 400ms ease;
+		&.left{
+			right: 100%;
+		}
+		&.active{
+			position: relative;
+			right: 0;
+		}
+		&.right{
+			right: -100%;
+		}
+	}
+	.hideButton{
+		position: absolute;
+		top: 0;
+		right: 0;
+		height: 10px;
+		width: 10px;
+		margin: 5px;
+	}
+	&.hidden{
+		width: 20px;
+		height: 20px;
+	}
+}

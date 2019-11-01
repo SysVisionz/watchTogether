@@ -1,0 +1,22 @@
+ {
+  "name": "Watch Together App",
+  "manifest_version": 2,
+  "version": "0.0.1",
+  "description": "Allows you to watch any videos online together with your friends! (works in: Netflix, Youtube, Hulu",
+  "content_scripts": [{
+    "js": [ "./content/huluer.js", "./content/hulu.js"],
+    "matches": ["https://www.hulu.com/*"]
+   }, {
+    "js": [ "./content/netflixer.js", "./content/netflix.js"],
+    "matches": ["https://www.netflix.com/*"]    
+   }, {
+    "js": [ "./content/videoman.js", "./content/video.js"],
+    "matches": ["https://www.youtube.com"]
+   }
+ ],
+  "browser_action": {
+    "default_popup": "index.html"
+  },
+   "permissions": ["contextMenus", "tabs", "activeTab", "storage"],
+   "web_accessible_resources" : ["*.html"]
+}
