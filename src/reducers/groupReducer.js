@@ -46,9 +46,9 @@ export default (state=INITIAL_STATE, action) => {
     const {type, payload} = action;
     switch (type) {
         case 'insert':
-            return payload.group ? insertSub(payload.group, state) : null;
+            return payload.group ? insertSub(payload.group, state) : state;
         case 'update':
-            return payload.props.group ? replaceSub(payload.prop.group, payload.value, state) : null;
+            return payload.props.group ? replaceSub(payload.prop.group, payload.value, state) : state;
         case 'exit':
             return {...state, current: INITIAL_STATE.current};
         case 'exit failed': 

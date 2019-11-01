@@ -8,10 +8,10 @@
     "matches": ["https://www.hulu.com/*"]
    }, {
     "js": [ "./content/netflixer.js", "./content/netflix.js"],
-    "matches": ["https://www.netflix.com/*"]    
+    "matches": ["https://www.netflix.com/*"]
    }, {
-    "js": [ "./content/videoman.js", "./content/video.js"],
-    "matches": ["https://www.youtube.com"]
+    "js": [ "./content/videoer.js", "./content/video.js"],
+    "matches": ["https://www.youtube.com/*"]
    }
  ],
   "browser_action": {

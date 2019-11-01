@@ -1,9 +1,6 @@
-import {genSalt, hash} from 'bcryptjs';
+ 	import {genSalt, hash} from 'bcryptjs';
 import request from 'request-promise';
 
-export const overwrite = (prop, value) => ({ type: 'overwrite', payload: {prop, value} })
-
-export const insert = prop => ({ type: 'insert', payload: prop })
 
 const uri = location => 'localhost:8086/' + location;
 

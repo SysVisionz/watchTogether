@@ -1,10 +1,6 @@
 import {genSalt, hash} from 'bcryptjs';
 import request from 'request-promise';
 
-export const overwrite = (prop, value) => ({ type: 'overwrite', payload: {prop, value} })
-
-export const insert = prop => ({ type: 'insert', payload: prop })
-
 const uri = location => 'localhost:8086/' + location;
 
 const getToken = () => localStorage.getItem('svz-watch-together-user-token')
@@ -42,5 +38,5 @@ export const getGroups = () => {
 }
 
 export const exitGroup = socket => {
-	socket.emit('exitGroup', {token});
+	socket.emit('exitGroup', {token: getToken()});
 }

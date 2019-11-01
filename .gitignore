@@ -19,7 +19,6 @@
 .env.production.local
 
 #databasing
-
 /db/dataConfig.js
 
 

@@ -43,9 +43,9 @@ export default (state=INITIAL_STATE, action) => {
     const {type, payload} = action;
     switch (type) {
         case 'insert':
-            return payload.user ? insertSub(payload.auth, state) : {...state};
+            return payload.user ? insertSub(payload.auth, state) : state;
         case 'overwrite':
-            return payload.prop.user ? replaceSub(payload.prop.auth, payload.value, state) : {...state};
+            return payload.prop.user ? replaceSub(payload.prop.auth, payload.value, state) : state;
         case 'login':
             return insertSub({...payload.user, newUser: payload.newUser})
         default:

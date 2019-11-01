@@ -2,6 +2,8 @@ export * from './ApprovePanel';
 export * from './CurrentState';
 export * from './Groups';
 export * from './History';
+export * from './InvitePanel';
+export * from './LoginPanel';
 export * from './NewGroup';
 export * from './NewUser';
 export * from './ProfilePanel';

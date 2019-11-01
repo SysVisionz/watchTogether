@@ -4,13 +4,12 @@ import PropTypes from 'prop-types';
 import openSocket from 'socket.io-client';
 import {filterJoin, Button, TimeMan} from 'svz-toolkit'
 import './App.scss';
-import {NewUser, CurrentState, Groups, ProfilePanel, NewGroup, History, LoginPanel} from './components'
+import {NewUser, CurrentState, Groups, ProfilePanel, NewGroup, History, LoginPanel, InvitePanel, ApprovePanel} from './components'
 import {signIn, logout, update, overwrite, createUser} from './actions';
 
 const mapStateToProps = state => {
 	const {
 		groups,
-		current,
 		video,
 		time
 	} = state.group
@@ -27,7 +26,8 @@ const mapStateToProps = state => {
 	const {
 		sessionGroup,
 		sessionId,
-		privileges
+		privileges,
+		currentHistory
 	} = state.session
 	return {
 		video,
@@ -35,12 +35,11 @@ const mapStateToProps = state => {
 		pass,
 		newUser,
 		friends,
-		loginError,
 		groups,
-		current,
 		displayName,
 		persist,
 		newUser,
+		currentGroup: state.group.current,
 		groupError: state.group.error,
 		authError: state.auth.error,
 		sessionError: state.session.error,
@@ -53,7 +52,7 @@ class App extends Component {
 	
 	constructor() {
 		super()
-		this.state={active:'current', hidden: false}
+		this.state={active:0, hidden: false}
 		this.timeManager = new TimeMan()
 	}
 
@@ -113,7 +112,7 @@ class App extends Component {
 		this.socket.on('approve', function(data){
 			if (this.props.privileges[data.type]){
 				if (data.time)
-				this.setState({approving: data});
+				this.setState({approving: data });
 			}
 		})
 	}
@@ -149,24 +148,24 @@ class App extends Component {
 			currentHistory, 
 			update, 
 			persist, 
-			newUser
+			newUser,
+			currentGroup
 		} = this.props
 		const {active, hidden, approving} = this.state
 		const {pickActive, seek, sendApprove, socket} = this;
 		const contents = [
-			<CurrentState friends={friendsList} />,
-			<LoginPanel pass={pass} login = {(pass, persist) => login(displayName, pass, persist, socket)} update={update} />,
+			<CurrentState friends={friendsList || []} group={currentGroup} pickActive={pickActive} pass={pass} login = {(pass, persist) => signIn(displayName, pass, persist, socket)} update={update} />,
 			<NewUser userError = {userError} approve={email => createUser(displayName, pass, email, persist, socket)} editEmail={ (email) => update({user: {email}})} displayName={displayName} email={email} reset={pickActive}/>,
 			<Groups pickActive = {pickActive} groups={groups} />,
 			<ProfilePanel />,
-			<InviteUser invite={inviteUser} friends={friendsList}/>,
+			<InvitePanel invite={inviteUser} friends={friendsList}/>,
 			<ApprovePanel action={approving} approve={() => sendApprove(true)} reject={() => sendApprove(false)} reset={pickActive} />,
 			<History currentHistory={currentHistory} />,
 			<NewGroup />
 		]
 		return (
 			<div id={filterJoin(["popup-container", [hidden, 'hidden']])}>
-				<div><Button onClick={() => pickActive()}>Session</Button>{displayName ? <><Button onClick={() => pickActive(3)}>Group</Button><Button>History</Button><Button>Settings</Button></> : null}</div>
+				{displayName ? <div><Button onClick={() => pickActive()}>Session</Button><Button onClick={() => pickActive(3)}>Group</Button><Button>History</Button><Button>Settings</Button></div>: null}
 				<div>{
 					contents.map((content, index) => {
 						const position = active < index ? 'right' : active > index ? 'left' : 'active'

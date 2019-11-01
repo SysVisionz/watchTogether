@@ -2,11 +2,12 @@ import React, {useState} from 'react'
 import PropTypes from 'prop-types';
 import {Button, Input, PopContent} from 'svz-toolkit'
 
-const NewUser = props => {
+const NewGroup = props => {
 	const {displayName, onSubmit} = props;
 	const [name, setName] = useState(props.name);
 	const [invited, setInvited] = useState([]);
 	const [open, setOpen] = useState(false);
+    const [groupName, setGroupName] = useState('');
 	const [privs, setPrivs] = useState({
 	admin: {
         video: false,
@@ -43,7 +44,7 @@ const NewUser = props => {
         buffer: true,
         approve: false,
         invite: false
-    })
+    }})
     const labels = {
     	video: 'Can select video',
         seek: 'Can change video time',
@@ -68,7 +69,7 @@ const NewUser = props => {
     }
 	return (
 		<div>
-			<Input value={groupName} onChange={email => update({email})} placeholder="Email" />
+			<Input value={groupName} onChange={newName => setGroupName({newName})} placeholder="Email" />
 			<PopContent label="Settings">
 				<h4>Owner: {props.displayName}</h4>
 				<h4>Group Name:</h4><Input onChange={val => setOpen(name)} />
@@ -86,8 +87,8 @@ const NewUser = props => {
 	)
 }
 
-NewUser.propTypes = {
+NewGroup.propTypes = {
 
 };
 
-export {NewUser};
+export {NewGroup};
