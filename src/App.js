@@ -1,11 +1,10 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
-import openSocket from 'socket.io-client';
 import {filterJoin, Button, TimeMan} from 'svz-toolkit'
 import './App.scss';
 import {NewUser, CurrentState, Groups, ProfilePanel, NewGroup, History, LoginPanel, InvitePanel, ApprovePanel} from './components'
-import {signIn, logout, update, overwrite, createUser} from './actions';
+import {signIn, logout, update, overwrite, createUser, newGroup, sendChat} from './actions';
 
 const mapStateToProps = state => {
 	const {
@@ -21,15 +20,17 @@ const mapStateToProps = state => {
 		displayName,
 		friends,
 		type,
-		pass
+		pass,
+		name,
+		chat
 	} = state.user
 	const {
 		sessionGroup,
 		sessionId,
-		privileges,
-		currentHistory
+		privileges
 	} = state.session
 	return {
+		chat,
 		video,
 		displayName,
 		pass,
@@ -37,14 +38,16 @@ const mapStateToProps = state => {
 		friends,
 		groups,
 		displayName,
+		name,
 		persist,
 		newUser,
+		sessionChat: state.session.chat,
 		currentGroup: state.group.current,
 		groupError: state.group.error,
 		authError: state.auth.error,
 		sessionError: state.session.error,
 		userError: state.user.error,
-		currentHistory
+		history: state.group.history || state.session.history
 	}
 }
 
@@ -52,72 +55,24 @@ class App extends Component {
 	
 	constructor() {
 		super()
-		this.state={active:0, hidden: false}
+		this.state={active:0, hidden: false, chatPosition: 'bottom'}
 		this.timeManager = new TimeMan()
+		this.chatRef = React.createRef()
 	}
 
-	get token () { return localStorage.getItem('svz-watch-together-user-token') }
-
-	componentDidMount(){
-		const {chrome} = window;
-		const {id} = this.props;
-		this.socket = openSocket('http://localhost');
-		this.socket.on('group', function(data){
-			this.props.insert({group: data})
-		})
-		this.socket.on('play', function(data){
-			chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-				chrome.tabs.sendMessage(tabs[0].id, {type: "play"}, function(response){
-					console.log(response);
-				})
-			})
-		})
-		this.socket.on('buffer', function(data){
-			chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-				chrome.tabs.sendMessage(tabs[0].id, {type: "buffer"}, function(response){
-					console.log(response);
-				})
-			})
-		})
-		this.socket.on('pause', function(data){
-			chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-				chrome.tabs.sendMessage(tabs[0].id, {type: "pause"}, function(response){
-					console.log(response);
-				})
-			})
-		})
-		this.socket.on('seek', function(data){
-			const {type} = this.props;
-			chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-				if (data.admin){
-					this.handleSeek(data.seek)
-				}
-				if (!data.admin && (type === 'admin' || type === 'owner')){
-					this.approveSeek(data.user, data.seek)
-				}
-			})
-		})
-		this.socket.on('video', function(data){
-			chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-				chrome.tabs.sendMessage(tabs[0].id, {type: "episode", id}, function(response){
-					console.log(response);
-				})
-			})
-		})
-		this.socket.on('privileges', function(data){
-			if (data.id.includes(this.props.id)){
-				this.props.this.props.update({session: {privileges: data.privs}})
-			}
-		})
-		this.socket.on('approve', function(data){
-			if (this.props.privileges[data.type]){
-				if (data.time)
-				this.setState({approving: data });
-			}
-		})
+	checkBottom = evt => {
+		const chatBox = evt.target;
+		const {update} = this.props;
+		if (chatBox.scrollTop === 0){
+			this.setState({chatPosition: 'top' })
+		}
+		else if (chatBox.scrollTop-chatBox.scrollHeight+chatBox.clientHeight === 0){
+			this.setState({chatPosition: 'bottom' })
+		}
+		else if ( this.state.chatPosition !== 'scrolling' ) {
+			this.setState({chatPosition: 'scrolling' })
+		}
 	}
-
-	sendApprove = approve => this.socket.emit('adminResponse', {approve, token: this.token})
 
 	handleSeek = seek => {
 		const {chrome} = window;
@@ -129,7 +84,15 @@ class App extends Component {
 		})
 	}
 
+	componentDidUpdate(){
+		if (!this.state.ready && this.chatRef.current){
+			this.chatRef.current.addEventListener('scroll', this.checkBottom)
+			this.setState({ready: true})
+		}
+	}
+
 	pickActive = active => active ? this.setState({active}) : 0 ;
+
 
 	render() {
 		const {
@@ -145,32 +108,88 @@ class App extends Component {
 			approveSeek, 
 			email, 
 			userError, 
-			currentHistory, 
+			history, 
 			update, 
 			persist, 
 			newUser,
-			currentGroup
+			name,
+			currentGroup,
+			chat,
+			sessionChat,
+			newGroup,
 		} = this.props
 		const {active, hidden, approving} = this.state
-		const {pickActive, seek, sendApprove, socket} = this;
+		const {pickActive, seek, sendApprove, sendChat} = this;
 		const contents = [
-			<CurrentState friends={friendsList || []} group={currentGroup} pickActive={pickActive} pass={pass} login = {(pass, persist) => signIn(displayName, pass, persist, socket)} update={update} />,
-			<NewUser userError = {userError} approve={email => createUser(displayName, pass, email, persist, socket)} editEmail={ (email) => update({user: {email}})} displayName={displayName} email={email} reset={pickActive}/>,
-			<Groups pickActive = {pickActive} groups={groups} />,
-			<ProfilePanel />,
-			<InvitePanel invite={inviteUser} friends={friendsList}/>,
-			<ApprovePanel action={approving} approve={() => sendApprove(true)} reject={() => sendApprove(false)} reset={pickActive} />,
-			<History currentHistory={currentHistory} />,
-			<NewGroup />
+			<CurrentState 
+				chatRef = {this.chat} 
+				chat={chat} 
+				sessionChat={sessionChat} 
+				friends={friendsList || []} 
+				group={currentGroup} 
+				name={name} 
+				pickActive={pickActive} 
+				pass={pass}
+				displayName={displayName}
+				login = {(persist) => signIn(displayName, pass, persist)} 
+				update={update} 
+				sendChat = {sendChat}
+			/>,
+			<NewUser 
+				userError = {userError}
+				approve={email => createUser(displayName, pass, email, persist)}
+				editEmail={ (email) => update({user: {email}})}
+				displayName={displayName}
+				email={email}
+				reset={pickActive}
+			/>,
+			<Groups 
+				pickActive = {pickActive} 
+				groups={groups} 
+			/>,
+			<ProfilePanel 
+				displayName={displayName} 
+				name={name} 
+			/>,
+			<InvitePanel
+				invite={inviteUser}
+				friends={friendsList}
+			/>,
+			<ApprovePanel
+				action={approving}
+				approve={() => sendApprove(true)}
+				reject={() => sendApprove(false)} 
+				reset={pickActive} 
+			/>,
+			<History 
+				history={history} 
+			/>,
+			<NewGroup 
+				onSubmit={newGroup}
+				error={userError}
+				rest={pickActive}
+			/>
 		]
 		return (
 			<div id={filterJoin(["popup-container", [hidden, 'hidden']])}>
-				{displayName ? <div><Button onClick={() => pickActive()}>Session</Button><Button onClick={() => pickActive(3)}>Group</Button><Button>History</Button><Button>Settings</Button></div>: null}
+			<h1>Watch Together</h1>
+				{displayName 
+					? <div>
+						<Button onClick={() => pickActive()}>Session</Button>
+						<Button onClick={() => pickActive(3)}>Group</Button>
+						<Button>History</Button>
+						<Button>Settings</Button>
+					</div>
+					: null
+				}
 				<div>{
 					contents.map((content, index) => {
 						const position = active < index ? 'right' : active > index ? 'left' : 'active'
 						return (
-							<div key={'svz-tab-' + index} className={'tab ' + position} >
+							<div 
+								key={'svz-tab-' + index}
+								className={'tab ' + position} 
+							>
 								{content}
 							</div>
 						)
@@ -182,6 +201,7 @@ class App extends Component {
 }
 
 App.propTypes = {
+	sendChat: PropTypes.func,
 	signIn: PropTypes.func, 
 	logout: PropTypes.func, 
 	update: PropTypes.func, 
@@ -200,4 +220,4 @@ App.propTypes = {
 	type: PropTypes.string
 }
 
-export default connect (mapStateToProps, {signIn, logout, update, overwrite, createUser}) (App);
+export default connect (mapStateToProps, {signIn, logout, update, overwrite, createUser, newGroup, sendChat}) (App);

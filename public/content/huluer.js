@@ -79,12 +79,19 @@ class Huluer {
 
 	get id () { return video_to_watch.entityId || null }
 
-	addChangeListener = (type, listener) => {
+	addListener = (type, listener) => {
 		this.listeners[type].push(listener)
+	}
+
+	removeListener = (type, listener) => {
+		if (this.listeners[type].includes(listener)){
+			this.listeners[type].splice(this.listeners[type].indexOf(listener), 1);
+		}
 	}
 
 	set time (setTime) {
 		this.player.currentTime = setTime;
+		this.addListener()
 	}
 
 	get time () {

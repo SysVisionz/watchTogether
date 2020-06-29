@@ -1,11 +1,13 @@
 import {genSalt, hash} from 'bcryptjs';
+
 import request from 'request-promise';
+require('dotenv').config() 
 
 export const overwrite = (prop, value) => ({ type: 'overwrite', payload: {prop, value} })
 
 export const update = prop => ({ type: 'insert', payload: prop })
 
-const uri = location => 'localhost:8086/' + location;
+const uri = location => process.env.HOST + location;
 
 const getToken = () => localStorage.getItem('svz-watch-together-user-token')
 
@@ -22,7 +24,7 @@ export const loadData = () => {
 	}
 }
 
-const login = (res, socket) => {
+const login = (res) => {
 	return dispatch => ({
 		type: 'login',
 		payload: {
@@ -31,15 +33,9 @@ const login = (res, socket) => {
 			token: res.headers['x-auth']
 		}
 	})
-	socket.emit('login', {token: res.headers['x-auth']});
 }
 
-export const signIn = (displayName, pass, persist, socket) => {
-	const saltPass = genSalt(10, (err, salt) => {
-		hash(pass, salt, (err, hash) => {
-			pass = saltPass;
-		}); 
-	});
+export const signIn = (displayName, pass, persist) => {
 	return dispatch => {
 		request({
 			method: 'GET',
@@ -48,7 +44,7 @@ export const signIn = (displayName, pass, persist, socket) => {
 				displayName, pass, persist
 			},
 			json: true
-		}).then (res => login(res, socket))
+		}).then (res => login(res))
 		.catch(err => {
             dispatch({
                 type: 'login fail',
@@ -61,16 +57,16 @@ export const signIn = (displayName, pass, persist, socket) => {
 	}
 }
 
-export const createUser = (displayName, pass, email, persist, socket) => {
+export const createUser = (displayName, pass, email, persist) => {
 	return dispatch => {
 		request({
 			method: 'POST',
 			uri: uri('users'),
 			body: {
-				displayName, pass, email, persist, socket, token: getToken()
+				displayName, pass, email, persist, token: getToken()
 			},
 			json: true
-		}).then(res => login(res, socket)).catch(err => {
+		}).then(res => login(res)).catch(err => {
 			dispatch({
 				type: 'login fail',
 				payload: {
@@ -78,6 +74,13 @@ export const createUser = (displayName, pass, email, persist, socket) => {
 				}
 			})
 		})
+	}
+}
+
+export const openSocket = socket => {
+	const token = getToken();
+	return dispatch => {
+		socket.emit('signIn', )
 	}
 }
 

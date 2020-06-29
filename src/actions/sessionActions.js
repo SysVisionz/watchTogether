@@ -1,8 +1,8 @@
- 	import {genSalt, hash} from 'bcryptjs';
+import {genSalt, hash} from 'bcryptjs';
 import request from 'request-promise';
+require('dotenv').config() 
 
-
-const uri = location => 'localhost:8086/' + location;
+const uri = location => process.env.HOST + location;
 
 const getToken = () => localStorage.getItem('svz-watch-together-user-token')
 
@@ -14,6 +14,6 @@ export const exitSession = socket => {
 	socket.emit('exitSession', {token: getToken()})
 }
 
-export const leaveGroup = socket => {
-	socket.emit('exitGroup', {token: getToken()})
+export const sendChat = (socket, content) => {
+	socket.emit('sendChat', {token: getToken(), content})
 }

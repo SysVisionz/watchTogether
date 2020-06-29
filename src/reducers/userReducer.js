@@ -6,7 +6,9 @@ const INITIAL_STATE = {
     history: {
         personal: [],
         group: []
-    }
+    },
+    socket: null,
+    error: null
 }
 
 const insertSub = (target, current) => {
@@ -42,12 +44,10 @@ const replaceSub = (target, newVal, current) => {
 export default (state=INITIAL_STATE, action) => {
     const {type, payload} = action;
     switch (type) {
-        case 'insert':
-            return payload.user ? insertSub(payload.auth, state) : state;
+        case 'update':
+            return payload.user ? {...state, payload} : state;
         case 'overwrite':
-            return payload.prop.user ? replaceSub(payload.prop.auth, payload.value, state) : state;
-        case 'login':
-            return insertSub({...payload.user, newUser: payload.newUser})
+            return payload.prop.user ? replaceSub(payload.prop.user, payload.value, state) : state;
         default:
             return {...state};
     }

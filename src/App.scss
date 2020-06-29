@@ -20,14 +20,29 @@
 	color: #09d3ac;
 }
 
+.svz-pc-title-container{
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 5px;
+    font-weight: bold;
+    background-color: #5757c3;
+    border: 1px solid #fcfcfc;
+    color: #fcfcfc;
+    box-shadow: -1px 1px 2px #333;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
 #popup-container{
 	overflow: hidden;
 	width: 300px;
-	height: 300px;
+	min-height: 300px;
 	.tab{
 		width: 300px;
 		position: absolute;
-		transition: right 400ms ease;
+		transition: right 400ms linear;
 		&.left{
 			right: 100%;
 		}
@@ -43,6 +58,7 @@
 			align-items: center;
 			justify-content: center;
 			flex-direction: column;
+			text-align: center;
 		}
 	}
 	.hideButton{
@@ -56,5 +72,25 @@
 	&.hidden{
 		width: 20px;
 		height: 20px;
+	}
+}
+
+.chat-container{
+	.chat-content{
+		overflow: hidden;
+		.container{
+			bottom:0;
+			.sender, h2{
+				font-weight: bold;
+				color: #1a73e8;
+			}
+			.content{
+				color: #333;
+			}
+		}
+	}
+	.chat-entry{
+		display: flex;
+		align-items: center;
 	}
 }

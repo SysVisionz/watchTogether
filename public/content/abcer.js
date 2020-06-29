@@ -1,9 +1,9 @@
-class Netflixer {
+class ABCer {
 
-	constructor(){
-		netflix.appContext.getPlayerApp().addChangeListener(this.handleChange)
-		this.currentId = this.id;
-		this.currentVideo = this.video;
+	constructor(started){
+		if (started){
+			document.getElementsByClassName('pl-idle-btn')[0].click();
+		}
 		this.listeners = {
 			video: [],
 			play: [],
@@ -17,6 +17,8 @@ class Netflixer {
 		this.video.addEventListener('seeking', this.handleSeek);
 		this.video.addEventListener('canplaythrough', this.handleChange)
 	}
+
+	get video(){return document.getElementsByClassName('amp-media-element')[0]}
 
 	handlePlay = () => {
 		const {buffer, play} = this.listeners
@@ -41,27 +43,6 @@ class Netflixer {
 		this.buffering = true;
 		for (const i in this.listeners.buffer){
 			this.listeners.buffer[i](true)
-		}
-	}
-
-	handleChange = e => {
-		const {video} = this.listeners;
-		if (this.id && this.video && this.id !== this.currentId){
-			for (const i in video){
-				video[i](this.id);
-			}
-			this.currentVideo.removeEventListener('play', this.handlePlay)
-			this.currentVideo.removeEventListener('pause', this.handlePause)
-			this.currentVideo.removeEventListener('waiting', this.handleWait);
-			this.currentVideo.removeEventListener('seeking', this.handleSeek);
-			this.currentVideo.removeEventListener('canplaythrough', this.handleChange)
-			this.video.addEventListener('play', this.handlePlay)
-			this.video.addEventListener('pause', this.handlePause)
-			this.video.addEventListener('waiting', this.handleWait);
-			this.video.addEventListener('seeking', this.handleSeek);
-			this.video.addEventListener('canplaythrough', this.handleChange)
-			this.currentVideo = this.video;
-			this.currentId = this.id;
 		}
 	}
 

@@ -86,23 +86,32 @@ class Videoer {
 
 	get time () { return this.video.currentTime; }
 
-	set movie (host, id) {
+	setMovie = (host, id) => {
 		switch(host){
 			case 'www.youtube.com':
 				window.location = "https://www.youtube.com/watch?v="+id
 				break;
+			case "www.pornhub.com":
+				window.location = 'https://www.pornhub.com/view_video.php?viewkey='+id
+				break;
 		}
 	}
  	
-	get video () { return this.element.getElementsByTagName('video')[0]}
+	get video () { 
+		switch(this.host){
+			case 'www.youtube.com':
+			case 'www.pornhub.com':
+			return this.element.getElementsByTagName('video')[0]
+		} 
+	}
 
-	addChangeListener = (type, callBack) => this.listeners[type].push(callBack)
+	addListener = (type, callBack) => this.listeners[type].push(callBack)
 
-	removeChangeListener = (type, callBack) => {
+	removeListener = (type, callBack) => {
 		if (this.listeners[type].includes(callBack)){
 			this.listeners[type].splice(this.listeners[type].indexOf(callBack), 1);
 		}
 	}
 
 }
-export {Netflixer};
+export {Videoer};
